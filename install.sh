@@ -92,10 +92,64 @@ main () {
         info_bold "This installer will now exit."
     }
 
-    if [ "$#" -ne "1" ]; then
-        error "expected 1 argument, got $#"
+    usage() {
+        echo "Usage: install.sh VERSION [options]"
+        echo
+        echo "Options:"
+        echo "--help, -h                Print this help message"
+        echo "--install-root PATH       Install dune to the specified location instead of prompting"
+        echo "--update-shell-config     Always the shell config (e.g. .bashrc) if necessary"
+        echo "--no-update-shell-config  Never update the shell config (e.g. .bashrc)"
+    }
+
+    install_root=""
+    should_update_shell_config=""
+    while [ "$#" -gt "0" ]; do
+        arg="$1"
+        shift
+        case "$arg" in
+            -h|--help)
+                usage
+                exit 0
+                ;;
+            --install-root)
+                install_root="$1"
+                shift
+                case "$install_root" in
+                    /*)
+                        ;;
+                    *)
+                        error "--install-root must be passed an absolute path (got \"$install_root\")"
+                        ;;
+                esac
+                ;;
+            --update-shell-config)
+                should_update_shell_config="y"
+                ;;
+            --no-update-shell-config)
+                should_update_shell_config="n"
+                ;;
+            -*)
+                print_error "Unknown option: $arg"
+                usage
+                exit 1
+                ;;
+            *)
+                if [ -z "${version+x}" ]; then
+                    version="$arg"
+                else
+                    error "Expected single anonymous argument (the Dune version) but got multiple: $version, $arg"
+                fi
+                ;;
+        esac
+    done
+
+    if [ -z "${version+x}" ]; then
+        print_error "No version specified"
+        usage
+        exit 1
     fi
-    version="$1"
+
     case $(uname -ms) in
         'Darwin x86_64')
             target=x86_64-apple-darwin
@@ -126,21 +180,22 @@ main () {
     echo
     echo
 
-    install_root_local="$HOME/.local"
-    install_root_dune="$HOME/.dune"
-    if opam_switch_before_dot_local_bin_in_path; then
-        warn "Your current opam switch is earlier in your \$PATH than dune's recommended install location. This installer would normally recommend installing dune to $install_root_local however in your case this would cause the dune executable from your current opam switch to take precedent over the dune installed by this installer. This installer will proceed with an alternative default installation directory $install_root_dune which you are free to override."
-        echo
-        default_install_root="$install_root_dune"
-        install_root_local_message=""
-        install_root_dune_message=" (recommended)"
-    else
-        default_install_root="$install_root_local"
-        install_root_local_message=" (recommended)"
-        install_root_dune_message=""
+    if [ -z "$install_root" ]; then
+        install_root_local="$HOME/.local"
+        install_root_dune="$HOME/.dune"
+        if opam_switch_before_dot_local_bin_in_path; then
+            warn "Your current opam switch is earlier in your \$PATH than dune's recommended install location. This installer would normally recommend installing dune to $install_root_local however in your case this would cause the dune executable from your current opam switch to take precedent over the dune installed by this installer. This installer will proceed with an alternative default installation directory $install_root_dune which you are free to override."
+            echo
+            default_install_root="$install_root_dune"
+            install_root_local_message=""
+            install_root_dune_message=" (recommended)"
+        else
+            default_install_root="$install_root_local"
+            install_root_local_message=" (recommended)"
+            install_root_dune_message=""
+        fi
     fi
 
-    install_root=""
     while [ -z "$install_root" ]; do
         info "Where would you install dune? (enter index number or custom absolute path)"
         echo
@@ -262,7 +317,6 @@ main () {
     shell_config_code
     echo
 
-    should_update_shell_config=""
     while [ -z "$should_update_shell_config" ]; do
         info_bold "Would you like these lines to be appended to $shell_config? ([y]/n) >"
         read -r choice < /dev/tty
