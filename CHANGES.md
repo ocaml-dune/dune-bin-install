@@ -1,5 +1,16 @@
 # Changelog
 
+## v1
+
+### Fixes
+
+- Fix bug where install script assumed `$shell` to initially be unset, which is
+  not always true (#5)
+
+### Added
+
+### Changed
+
 ## v0
 
 ### Fixes

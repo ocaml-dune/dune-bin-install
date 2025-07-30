@@ -145,13 +145,13 @@ main () {
                 if [ "$#" -eq "0" ]; then
                     error "--shell must be passed an argument"
                 fi
-                shell="$1"
+                shell_name="$1"
                 shift
-                case "$shell" in
+                case "$shell_name" in
                     bash|zsh|fish)
                         ;;
                     *)
-                        error "--shell must be passed one of bash, zsh, fish. Got $shell."
+                        error "--shell must be passed one of bash, zsh, fish. Got $shell_name."
                         ;;
                 esac
                 ;;
@@ -288,9 +288,9 @@ main () {
     echo
     echo
 
-    shell=${shell:-$(basename "${SHELL:-*}")}
+    shell_name=${shell_name:-$(basename "${SHELL:-*}")}
     env_dir="$install_root/share/dune/env"
-    case "$shell" in
+    case "$shell_name" in
         bash)
             env_file="$env_dir/env.bash"
             shell_config="${shell_config:-$HOME/.bashrc}"
@@ -304,7 +304,7 @@ main () {
             shell_config="${shell_config:-$HOME/.config/fish/config.fish}"
             ;;
         *)
-            info "The install script does not recognize your shell ($shell)."
+            info "The install script does not recognize your shell ($shell_name)."
             echo
             info "It's up to you to ensure $install_root/bin is in your \$PATH variable."
             echo
