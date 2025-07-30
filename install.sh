@@ -100,6 +100,8 @@ main () {
         echo "--install-root PATH       Install dune to the specified location instead of prompting"
         echo "--update-shell-config     Always the shell config (e.g. .bashrc) if necessary"
         echo "--no-update-shell-config  Never update the shell config (e.g. .bashrc)"
+        echo "--shell-config PATH       Use this file as your shell config when updating the shell config"
+        echo "--shell SHELL             One of: bash, zsh, fish. Installer will treat this as your shell"
     }
 
     install_root=""
@@ -113,6 +115,9 @@ main () {
                 exit 0
                 ;;
             --install-root)
+                if [ "$#" -eq "0" ]; then
+                    error "--install-root must be passed an argument"
+                fi
                 install_root="$1"
                 shift
                 case "$install_root" in
@@ -128,6 +133,27 @@ main () {
                 ;;
             --no-update-shell-config)
                 should_update_shell_config="n"
+                ;;
+            --shell-config)
+                if [ "$#" -eq "0" ]; then
+                    error "--shell-config must be passed an argument"
+                fi
+                shell_config="$1"
+                shift
+                ;;
+            --shell)
+                if [ "$#" -eq "0" ]; then
+                    error "--shell must be passed an argument"
+                fi
+                shell="$1"
+                shift
+                case "$shell" in
+                    bash|zsh|fish)
+                        ;;
+                    *)
+                        error "--shell must be passed one of bash, zsh, fish. Got $shell."
+                        ;;
+                esac
                 ;;
             -*)
                 print_error "Unknown option: $arg"
@@ -262,20 +288,20 @@ main () {
     echo
     echo
 
-    shell=$(basename "${SHELL:-*}")
+    shell=${shell:-$(basename "${SHELL:-*}")}
     env_dir="$install_root/share/dune/env"
     case "$shell" in
         bash)
             env_file="$env_dir/env.bash"
-            shell_config="$HOME/.bashrc"
+            shell_config="${shell_config:-$HOME/.bashrc}"
             ;;
         zsh)
             env_file="$env_dir/env.zsh"
-            shell_config="$HOME/.zshrc"
+            shell_config="${shell_config:-$HOME/.zshrc}"
             ;;
         fish)
             env_file="$env_dir/env.fish"
-            shell_config="$HOME/.config/fish/config.fish"
+            shell_config="${shell_config:-$HOME/.config/fish/config.fish}"
             ;;
         *)
             info "The install script does not recognize your shell ($shell)."

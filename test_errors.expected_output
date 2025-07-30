@@ -1,0 +1,50 @@
+
+
+Test behaviour when no version is specified:
+[0;31merror[0m: No version specified
+Usage: install.sh VERSION [options]
+
+Options:
+--help, -h                Print this help message
+--install-root PATH       Install dune to the specified location instead of prompting
+--update-shell-config     Always the shell config (e.g. .bashrc) if necessary
+--no-update-shell-config  Never update the shell config (e.g. .bashrc)
+--shell-config PATH       Use this file as your shell config when updating the shell config
+--shell SHELL             One of: bash, zsh, fish. Installer will treat this as your shell
+
+
+Test that only a single anonymous argument is allowed:
+[0;31merror[0m: Expected single anonymous argument (the Dune version) but got multiple: foo, bar
+
+
+Test that unknown command-line arguments are detected:
+[0;31merror[0m: Unknown option: --foo
+Usage: install.sh VERSION [options]
+
+Options:
+--help, -h                Print this help message
+--install-root PATH       Install dune to the specified location instead of prompting
+--update-shell-config     Always the shell config (e.g. .bashrc) if necessary
+--no-update-shell-config  Never update the shell config (e.g. .bashrc)
+--shell-config PATH       Use this file as your shell config when updating the shell config
+--shell SHELL             One of: bash, zsh, fish. Installer will treat this as your shell
+
+
+Test that omitting the argument to --install-root is an error:
+[0;31merror[0m: --install-root must be passed an argument
+
+
+Test that passing anything other than an absolute path to --install-root is an error:
+[0;31merror[0m: --install-root must be passed an absolute path (got "foo")
+
+
+Test that --shell-config requires an argument:
+[0;31merror[0m: --shell-config must be passed an argument
+
+
+Test that --shell requires an argument:
+[0;31merror[0m: --shell must be passed an argument
+
+
+Test that --shell validates its argument:
+[0;31merror[0m: --shell must be passed one of bash, zsh, fish. Got foo.
