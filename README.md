@@ -28,3 +28,27 @@ Note the `--install-root /usr`, which causes dune to be installed system-wide,
 with its executable installed to `/usr/bin/dune`. Since `/usr/bin` is almost
 certainly already in `$PATH`, this will make the `dune` command available
 without needing to modify the environment.
+
+##  Tests
+
+### `test_errors.sh`
+
+This script exercises error cases. It takes the path to the install script as
+an argument. Its expected output is in `errors.expected_output`. Run the tests
+with:
+
+```bash
+diff <(./test_errors.sh ./install.sh) test_errors.expected_output
+```
+
+### `test_interactive.tcl`
+
+This is an expect script for running the interactive installation script and
+sending it various inputs at prompts, and asserting that it responds the way we
+expect.
+
+### `test.dockerfile`
+
+A Dockerfile that installs dune using the install script, then assets some
+facts to test that the installation succeeded. Build an image with the
+Dockerfile to run the tests (`docker build . -f test.dockerfile`).
