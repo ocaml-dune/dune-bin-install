@@ -4,7 +4,7 @@
 
 Paste this into your terminal to install Dune:
 ```
-curl -sSL https://github.com/ocaml-dune/dune-bin-install/releases/download/v0/install.sh | sh -s 3.19.1
+curl -sSL https://github.com/ocaml-dune/dune-bin-install/releases/download/v1/install.sh | sh -s 3.19.1
 ```
 
 No installation of opam or OCaml is necessary. Dune will be installed under `~/.local` by default.
@@ -22,7 +22,7 @@ when building a docker image. To do this, run the script with
 For example to install Dune while building a docker image from a Dockerfile,
 assuming `curl` is installed and the current user is root, one could use:
 ```dockerfile
-RUN curl -sSL https://github.com/ocaml-dune/dune-bin-install/releases/download/v0/install.sh | sh -s 3.19.1 --install-root /usr --no-update-shell-config
+RUN curl -sSL https://github.com/ocaml-dune/dune-bin-install/releases/download/v1/install.sh | sh -s 3.19.1 --install-root /usr --no-update-shell-config
 ```
 Note the `--install-root /usr`, which causes dune to be installed system-wide,
 with its executable installed to `/usr/bin/dune`. Since `/usr/bin` is almost
