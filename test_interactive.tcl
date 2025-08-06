@@ -50,5 +50,5 @@ expect {
         "Unexpected contents of shell config!"
         exit 1
     }
-    "# From dune installer:\r\nsource $tmp/share/dune/env/env.bash\r\n__dune_env $tmp"
+    "# From Dune installer:\r\nsource $tmp/share/dune/env/env.bash\r\n__dune_env $tmp"
 }
