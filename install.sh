@@ -7,6 +7,8 @@ set -eu
 # downloaded script does not get executed by accident. The function is called
 # at the end.
 main () {
+    dune_bin_git_url="https://github.com/ocaml-dune/dune-bin"
+
     # Reset
     Color_Off='\033[0m' # Text Reset
 
@@ -34,7 +36,7 @@ main () {
         version="$2"
         print_error "Failed to download Dune archive from \"$tar_uri\""
         print_error "Check that $version corresponds to a version of Dune with a binary release."
-        print_error "A list of Dune versions with binary releases can be found at: https://github.com/ocaml-dune/dune-bin/releases"
+        print_error "A list of Dune versions with binary releases can be found at: $dune_bin_git_url/releases"
         exit 1
     }
 
@@ -86,6 +88,11 @@ main () {
             sed 's#.*local.*#local#' |\
             paste -sd: - |\
             grep '^\(opam:\)\+\(local\)' > /dev/null
+    }
+
+    latest_binary_dune_version() {
+        ensure_command "git"
+        git ls-remote --tags "$dune_bin_git_url" | cut -f2 | sed 's#^refs/tags/##' | tail -n1
     }
 
     exit_message() {
@@ -170,10 +177,18 @@ main () {
         esac
     done
 
+    echo
+    info_bold "Welcome to the Dune installer!"
+    echo
+
     if [ -z "${version+x}" ]; then
-        print_error "No version specified"
-        usage
-        exit 1
+        echo
+        info "No Dune version was specified, so the installer will check the latest binary release of Dune..."
+        echo
+        version=$(latest_binary_dune_version)
+        echo
+        info "The latest binary release of Dune was found to be $version."
+        echo
     fi
 
     case $(uname -ms) in
@@ -190,7 +205,7 @@ main () {
             error "The Dune installation script does not currently support $(uname -ms)."
     esac
     tarball="dune-$version-$target.tar.gz"
-    tar_uri="https://github.com/ocaml-dune/dune-bin/releases/download/$version/$tarball"
+    tar_uri="$dune_bin_git_url/releases/download/$version/$tarball"
     # The tarball is expected to contain a single directory with this name:
     tarball_dir="dune-$version-$target"
 
@@ -198,9 +213,6 @@ main () {
     ensure_command "gzip"
     ensure_command "curl"
 
-    echo
-    info_bold "Welcome to the Dune installer!"
-    echo
     echo
     printf "This will guide you through the installation of %bDune %s%b."  "$Bold_White" "$version" "$Color_Off"
     echo

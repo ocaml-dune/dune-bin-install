@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Look up latest version if no version was specified (#7)
+
 ## v1
 
 ### Fixes
