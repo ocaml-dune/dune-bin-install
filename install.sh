@@ -32,7 +32,7 @@ main () {
     error_download_failed() {
         tar_uri="$1"
         version="$2"
-        print_error "Failed to download dune archive from \"$tar_uri\""
+        print_error "Failed to download Dune archive from \"$tar_uri\""
         print_error "Check that $version corresponds to a version of Dune with a binary release."
         print_error "A list of Dune versions with binary releases can be found at: https://github.com/ocaml-dune/dune-bin/releases"
         exit 1
@@ -63,7 +63,7 @@ main () {
     }
 
     ensure_command() {
-        command_exists "$1" || error "Failed to find \"$1\". This script needs \"$1\" to be able to install dune."
+        command_exists "$1" || error "Failed to find \"$1\". This script needs \"$1\" to be able to install Dune."
     }
 
     unsubst_home() {
@@ -97,7 +97,7 @@ main () {
         echo
         echo "Options:"
         echo "--help, -h                Print this help message"
-        echo "--install-root PATH       Install dune to the specified location instead of prompting"
+        echo "--install-root PATH       Install Dune to the specified location instead of prompting"
         echo "--update-shell-config     Always the shell config (e.g. .bashrc) if necessary"
         echo "--no-update-shell-config  Never update the shell config (e.g. .bashrc)"
         echo "--shell-config PATH       Use this file as your shell config when updating the shell config"
@@ -187,7 +187,7 @@ main () {
             target=x86_64-unknown-linux-musl
             ;;
         *)
-            error "The dune installation script does not currently support $(uname -ms)."
+            error "The Dune installation script does not currently support $(uname -ms)."
     esac
     tarball="dune-$version-$target.tar.gz"
     tar_uri="https://github.com/ocaml-dune/dune-bin/releases/download/$version/$tarball"
@@ -210,7 +210,7 @@ main () {
         install_root_local="$HOME/.local"
         install_root_dune="$HOME/.dune"
         if opam_switch_before_dot_local_bin_in_path; then
-            warn "Your current opam switch is earlier in your \$PATH than dune's recommended install location. This installer would normally recommend installing dune to $install_root_local however in your case this would cause the dune executable from your current opam switch to take precedent over the dune installed by this installer. This installer will proceed with an alternative default installation directory $install_root_dune which you are free to override."
+            warn "Your current opam switch is earlier in your \$PATH than Dune's recommended install location. This installer would normally recommend installing Dune to $install_root_local however in your case this would cause the Dune executable from your current opam switch to take precedent over the Dune installed by this installer. This installer will proceed with an alternative default installation directory $install_root_dune which you are free to override."
             echo
             default_install_root="$install_root_dune"
             install_root_local_message=""
@@ -223,7 +223,7 @@ main () {
     fi
 
     while [ -z "$install_root" ]; do
-        info "Where would you install dune? (enter index number or custom absolute path)"
+        info "Where would you like to install Dune? (enter index number or custom absolute path)"
         echo
         info "1) $install_root_local$install_root_local_message"
         echo
@@ -276,7 +276,7 @@ main () {
         error_download_failed "$tar_uri" "$version"
 
     tar -xf "$tmp_tar" -C "$tmp_dir" "$tar_owner" > /dev/null 2>&1 ||
-        error "Failed to extract dune archive content from \"$tmp_tar\""
+        error "Failed to extract Dune archive content from \"$tmp_tar\""
 
     mkdir -p "$install_root"
     for d in "$tmp_dir/$tarball_dir"/*; do
@@ -316,7 +316,7 @@ main () {
 
     dune_env_call="__dune_env $(unsubst_home "$install_root")"
     shell_config_code() {
-        echo "# From dune installer:"
+        echo "# From Dune installer:"
         echo "source $(unsubst_home "$env_file")"
         echo "$dune_env_call"
     }
@@ -327,7 +327,7 @@ main () {
         info "$match"
         echo
         echo
-        info "Just in case it isn't, here are the lines that need run when your shell starts to initialize dune:"
+        info "Just in case it isn't, here are the lines that need run when your shell starts to initialize Dune:"
         echo
         echo
         shell_config_code
@@ -367,7 +367,7 @@ main () {
         y)
             shell_config_code >> "$shell_config"
             echo
-            success "Added dune setup commands to $shell_config!"
+            success "Added Dune setup commands to $shell_config!"
             echo
             info "Restart your terminal for the changes to take effect."
             echo
