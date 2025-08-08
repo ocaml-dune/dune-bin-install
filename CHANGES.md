@@ -16,6 +16,7 @@
 
 - Clarify that pressing enter takes the default value (#9)
 - Include shell config filename when printing existing dune config (#12)
+- Allow paths beginning with '~' to be entered at install root prompt (#11)
 
 ## v1
 

@@ -279,6 +279,11 @@ main () {
             /*)
                 install_root=$choice
                 ;;
+            '~'/*)
+                install_root=$(echo "$choice" | sed "s#~#$HOME#")
+                echo
+                warn "Expanding $choice to $install_root"
+                ;;
             *)
                 echo
                 warn "Unrecognized choice: $choice"
