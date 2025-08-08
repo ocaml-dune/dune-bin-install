@@ -6,6 +6,10 @@
 
 - Look up latest version if no version was specified (#7)
 
+### Changed
+
+- Include shell config filename when printing existing dune config (#12)
+
 ## v1
 
 ### Fixes
