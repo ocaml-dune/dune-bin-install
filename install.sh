@@ -95,6 +95,28 @@ main () {
         git ls-remote --tags "$dune_bin_git_url" | cut -f2 | sed 's#^refs/tags/##' | tail -n1
     }
 
+    infer_shell_name() {
+        # In most environments the $SHELL variable will be set to shell in the
+        # current user's login info. However the case that the $SHELL variable
+        # is unset we can still infer the user's shell from the presence of
+        # other environment variables. The goal here is to determine the shell
+        # from which the user ran the install script, the idea being that
+        # that's the shell whose config file they'll (possibly) want the script
+        # to update.
+        if [ -n "${SHELL+x}" ]; then
+            basename "$SHELL"
+        else
+            if [ -n "${BASH_VERSINFO+x}" ]; then
+                echo "bash"
+            elif [ -n "${ZSH_VERSION+x}" ]; then
+                echo "zsh"
+            else
+                warn "Unable to identify your shell. Assuming posix sh. Rerun the installer with the '--shell' option to override."
+                echo "sh"
+            fi
+        fi
+    }
+
     exit_message() {
         info_bold "This installer will now exit."
     }
@@ -108,7 +130,7 @@ main () {
         echo "--update-shell-config     Always the shell config (e.g. .bashrc) if necessary"
         echo "--no-update-shell-config  Never update the shell config (e.g. .bashrc)"
         echo "--shell-config PATH       Use this file as your shell config when updating the shell config"
-        echo "--shell SHELL             One of: bash, zsh, fish. Installer will treat this as your shell"
+        echo "--shell SHELL             One of: bash, zsh, fish, sh. Installer will treat this as your shell. Use 'sh' for minimal posix shells such as ash"
     }
 
     install_root=""
@@ -155,10 +177,10 @@ main () {
                 shell_name="$1"
                 shift
                 case "$shell_name" in
-                    bash|zsh|fish)
+                    bash|zsh|fish|sh)
                         ;;
                     *)
-                        error "--shell must be passed one of bash, zsh, fish. Got $shell_name."
+                        error "--shell must be passed one of bash, zsh, fish, sh. Got $shell_name."
                         ;;
                 esac
                 ;;
@@ -300,9 +322,13 @@ main () {
     echo
     echo
 
-    shell_name=${shell_name:-$(basename "${SHELL:-*}")}
+    shell_name=${shell_name:-$(infer_shell_name)}
     env_dir="$install_root/share/dune/env"
     case "$shell_name" in
+        sh|ash|dash)
+            env_file="$env_dir/env.bash" # TODO: change this to env.sh once env.sh is added to the dune binary distro
+            shell_config="${shell_config:-$HOME/.profile}"
+            ;;
         bash)
             env_file="$env_dir/env.bash"
             shell_config="${shell_config:-$HOME/.bashrc}"
