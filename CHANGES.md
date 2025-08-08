@@ -13,6 +13,7 @@
 ### Changed
 
 - Clarify that pressing enter takes the default value (#9)
+- Include shell config filename when printing existing dune config (#12)
 
 ## v1
 

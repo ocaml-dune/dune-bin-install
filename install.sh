@@ -359,7 +359,7 @@ main () {
         echo "$dune_env_call"
     }
 
-    if [ -f "$shell_config" ] && match=$(grep -n "$(echo "$dune_env_call" | sed 's#\$#\\$#')" "$shell_config"); then
+    if [ -f "$shell_config" ] && match=$(grep -Hn "$(echo "$dune_env_call" | sed 's#\$#\\$#')" "$shell_config"); then
         info "It appears your shell config file ($shell_config) is already set up correctly as it contains the line:"
         echo
         info "$match"
