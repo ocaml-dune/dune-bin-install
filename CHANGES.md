@@ -6,6 +6,11 @@
 
 - Look up latest version if no version was specified (#7)
 
+### Fixes
+
+- Make sure directory containing shell config exists before updating shell
+  config (#10)
+
 ## v1
 
 ### Fixes
