@@ -7,6 +7,9 @@
 - Handle the case when the `$SHELL` variable is unset (#13)
 - Make sure directory containing shell config exists before updating shell
   config (#10)
+- Remove opam's shell hooks if present, which would have caused any dune
+  installed with opam to be run instead of the dune installed by this script
+  when running `dune` in the terminal. (#14)
 
 ### Added
 
