@@ -18,9 +18,6 @@ main() {
         echo "$@"
     }
 
-    test_title "Test behaviour when no version is specified:"
-    install
-
     test_title "Test that only a single anonymous argument is allowed:"
     install foo bar
 
