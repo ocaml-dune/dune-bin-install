@@ -6,6 +6,10 @@
 
 - Look up latest version if no version was specified (#7)
 
+### Changed
+
+- Allow paths beginning with '~' to be entered at install root prompt (#11)
+
 ## v1
 
 ### Fixes
