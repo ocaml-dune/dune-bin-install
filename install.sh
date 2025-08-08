@@ -235,7 +235,7 @@ main () {
     fi
 
     while [ -z "$install_root" ]; do
-        info "Where would you like to install Dune? (enter index number or custom absolute path)"
+        info "Where would you like to install Dune? (enter index number or custom absolute path or leave blank for default)"
         echo
         info "1) $install_root_local$install_root_local_message"
         echo
