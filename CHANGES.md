@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Handle the case when the `$SHELL` variable is unset (#13)
+
 ### Added
 
 - Look up latest version if no version was specified (#7)
