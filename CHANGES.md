@@ -6,6 +6,10 @@
 
 - Look up latest version if no version was specified (#7)
 
+### Changed
+
+- Clarify that pressing enter takes the default value (#9)
+
 ## v1
 
 ### Fixes
