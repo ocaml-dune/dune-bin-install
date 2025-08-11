@@ -131,6 +131,8 @@ main () {
         echo "--no-update-shell-config  Never update the shell config (e.g. .bashrc)"
         echo "--shell-config PATH       Use this file as your shell config when updating the shell config"
         echo "--shell SHELL             One of: bash, zsh, fish, sh. Installer will treat this as your shell. Use 'sh' for minimal posix shells such as ash"
+        echo "--debug-override-url URL  Download dune tarball from given url (debugging only)"
+        echo "--debug-tarball-dir DIR   Name of root directory inside tarball (debugging only)"
     }
 
     install_root=""
@@ -184,6 +186,20 @@ main () {
                         ;;
                 esac
                 ;;
+            --debug-override-url)
+                if [ "$#" -eq "0" ]; then
+                    error "--debug-override-url must be passed an argument"
+                fi
+                debug_override_url="$1"
+                shift
+                ;;
+            --debug-tarball-dir)
+                if [ "$#" -eq "0" ]; then
+                    error "--debug-tarball-dir must be passed an argument"
+                fi
+                debug_tarball_dir="$1"
+                shift
+                ;;
             -*)
                 print_error "Unknown option: $arg"
                 usage
@@ -227,9 +243,9 @@ main () {
             error "The Dune installation script does not currently support $(uname -ms)."
     esac
     tarball="dune-$version-$target.tar.gz"
-    tar_uri="$dune_bin_git_url/releases/download/$version/$tarball"
+    tar_uri=${debug_override_url:-"$dune_bin_git_url/releases/download/$version/$tarball"}
     # The tarball is expected to contain a single directory with this name:
-    tarball_dir="dune-$version-$target"
+    tarball_dir=${debug_tarball_dir:-"dune-$version-$target"}
 
     ensure_command "tar"
     ensure_command "gzip"
@@ -309,8 +325,14 @@ main () {
     fi
     tmp_tar="$tmp_dir/$tarball"
 
+    if [ -z "${debug_override_url+x}" ]; then
+        curl_proto="=https"
+    else
+        # When using a debugging url the tarball might not be served with https.
+        curl_proto="all"
+    fi
     curl --fail --location --progress-bar \
-        --proto '=https' --tlsv1.2 \
+        --proto "$curl_proto" --tlsv1.2 \
         --output "$tmp_tar" "$tar_uri" ||
         error_download_failed "$tar_uri" "$version"
 

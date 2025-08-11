@@ -254,6 +254,29 @@ RUN $SHELL -c 'test $(which dune) = "/home/user/.local/bin/dune"'
 
 
 ###############################################################################
+# Test the options to override the tarball url and directory name. These flags
+# can be used to install dune from a tarball at an arbitrary url, so just point
+# them at the official release anyway as this will still exercise the logic for
+# downloading dune from a url passed on the command-line.
+FROM base AS test10
+RUN apk update && apk add curl
+ENV DUNE_VERSION="3.19.1"
+
+# Install dune system-wide using the install script:
+RUN ./install.sh $DUNE_VERSION --install-root /usr --no-update-shell-config \
+    --debug-override-url https://github.com/ocaml-dune/dune-bin/releases/download/3.19.1/dune-3.19.1-x86_64-unknown-linux-musl.tar.gz \
+    --debug-tarball-dir dune-3.19.1-x86_64-unknown-linux-musl
+
+# Test that dune was installed to the expected location:
+RUN test $(which dune) = "/usr/bin/dune"
+
+# Test that the installed dune can be executed and that it reports being the
+# expected version:
+RUN test $(dune --version) = "$DUNE_VERSION"
+
+
+
+###############################################################################
 # Final stage that copies the install scripts from the previous stage to force
 # them to be rerun after the script changes. Docker won't rerun stages which
 # don't affect the final stage, even if their inputs change.
@@ -267,3 +290,4 @@ COPY --from=test6 /install.sh .
 COPY --from=test7 /install.sh .
 COPY --from=test8 /install.sh .
 COPY --from=test9 /install.sh .
+COPY --from=test10 /install.sh .

@@ -14,6 +14,7 @@
 ### Added
 
 - Look up latest version if no version was specified (#7)
+- Add debugging options to override the url (#15)
 
 ### Changed
 

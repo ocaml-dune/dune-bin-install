@@ -38,6 +38,12 @@ main() {
 
     test_title "Test that --shell validates its argument:"
     install 3.19.1 --shell foo
+
+    test_title "Test that --debug-override-url requires an argument:"
+    install 3.19.1 --debug-override-url
+
+    test_title "Test that --debug-tarball-dir requires an argument:"
+    install 3.19.1 --debug-tarball-dir
 }
 
 main "$@" 2>&1
