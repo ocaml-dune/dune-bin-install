@@ -403,6 +403,7 @@ main () {
 
     case "$should_update_shell_config" in
         y)
+            mkdir -p "$(dirname "$shell_config")"
             shell_config_code >> "$shell_config"
             echo
             success "Added Dune setup commands to $shell_config!"

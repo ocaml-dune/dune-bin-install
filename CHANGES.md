@@ -5,6 +5,8 @@
 ### Fixes
 
 - Handle the case when the `$SHELL` variable is unset (#13)
+- Make sure directory containing shell config exists before updating shell
+  config (#10)
 
 ### Added
 
