@@ -328,6 +328,101 @@ RUN test $(dune --version) = "$DUNE_VERSION"
 
 
 ###############################################################################
+# Test that the modied shell config can still be loaded successfully if dune is
+# no longer installed when the shell is bash.
+FROM base AS test13
+RUN apk update && apk add curl expect bash
+ENV DUNE_VERSION="3.19.1"
+
+ENV SHELL=/bin/bash
+RUN adduser -D -s $SHELL user
+USER user
+WORKDIR /home/user
+
+# Make the shell config exit with an error when an error is first encountered
+RUN echo 'set -e' > ~/.profile
+
+# Install dune and check that it worked
+RUN /install.sh $DUNE_VERSION --install-root ~/.local --shell-config ~/.profile --update-shell-config
+
+# Run the shell config as a script as a sanity check to test that it runs
+# successfully while dune is installed.
+RUN $SHELL .profile
+
+# Uninstall dune
+RUN rm -rf .local
+
+# Make sure the shell config can still be executed despite dune not being
+# installed.
+RUN $SHELL .profile
+
+
+
+###############################################################################
+# Test that the modied shell config can still be loaded successfully if dune is
+# no longer installed when the shell is zsh.
+FROM base AS test14
+RUN apk update && apk add curl expect zsh
+ENV DUNE_VERSION="3.19.1"
+
+ENV SHELL=/bin/zsh
+RUN adduser -D -s $SHELL user
+USER user
+WORKDIR /home/user
+
+# Make the shell config exit with an error when an error is first encountered
+RUN echo 'set -e' > ~/.zshrc
+
+# Install dune and check that it worked
+RUN /install.sh $DUNE_VERSION --install-root ~/.local --shell-config ~/.zshrc --update-shell-config
+
+# Run the shell config as a script as a sanity check to test that it runs
+# successfully while dune is installed.
+RUN $SHELL .zshrc
+
+# Uninstall dune
+RUN rm -rf .local
+
+# Make sure the shell config can still be executed despite dune not being
+# installed.
+RUN $SHELL .zshrc
+
+
+
+###############################################################################
+# Test that the modied shell config can still be loaded successfully if dune is
+# no longer installed when the shell is fish.
+FROM base AS test15
+RUN apk update && apk add curl expect fish
+ENV DUNE_VERSION="3.19.1"
+
+ENV SHELL=/usr/bin/fish
+RUN adduser -D -s $SHELL user
+USER user
+WORKDIR /home/user
+
+# Install dune and check that it worked
+RUN /install.sh $DUNE_VERSION --install-root ~/.local --shell-config ~/.config/fish/config.fish --update-shell-config
+
+# Fish doesn't have an equivalent of bash's `set -e` so instead create a
+# modified copy of the shell config which explicitly exits with an error if the
+# source command fails.
+RUN sed 's/^ *\(source\|\.\).*/& || exit 1/' .config/fish/config.fish > checked-config.fish
+
+# Run the modified shell config as a script as a sanity check to test that it
+# runs successfully while dune is installed.
+RUN $SHELL checked-config.fish
+
+# Uninstall dune
+RUN rm -rf .local
+
+# Make sure the modified shell config can still be executed despite dune not
+# being installed.
+RUN $SHELL checked-config.fish
+
+
+
+###############################################################################
 # Final stage that copies the install scripts from the previous stage to force
 # them to be rerun after the script changes. Docker won't rerun stages which
 # don't affect the final stage, even if their inputs change.
@@ -344,3 +439,6 @@ COPY --from=test9 /install.sh .
 COPY --from=test10 /install.sh .
 COPY --from=test11 /install.sh .
 COPY --from=test12 /install.sh .
+COPY --from=test13 /install.sh .
+COPY --from=test14 /install.sh .
+COPY --from=test15 /install.sh .
