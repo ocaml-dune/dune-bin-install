@@ -182,9 +182,46 @@ RUN $SHELL -c 'test $(which dune) = "/home/user/.local/bin/dune"'
 
 
 ###############################################################################
+# Test that dune can be installed alongside opam, and prevents opam's shell
+# hook from interfering with PATH such that the install script's instance of
+# dune takes precedence. This test uses sh as the login shell.
+FROM base AS test7
+RUN apk update && apk add curl expect rsync git make pkgconf clang
+
+# Install opam from its binary distribution
+RUN curl -fsSL https://opam.ocaml.org/install.sh > install_opam.sh && yes '' | sh install_opam.sh
+
+# Create a user
+ENV SHELL=/bin/sh
+RUN adduser -D -s $SHELL user
+USER user
+WORKDIR /home/user
+
+# Initialize opam for the user and install dune in their default switch using
+# opam
+RUN $SHELL -c 'opam init --disable-sandbox --auto-setup'
+RUN $SHELL -c 'opam install dune'
+
+# Before the binary distro of dune is installed, 'dune' refers to the instance
+# installed by opam.
+RUN $SHELL --login -c 'test "$(which dune)" = "/home/user/.opam/default/bin/dune"'
+
+# Install dune using the interactive installer taking the default option at
+# each prompt.
+ENV DUNE_VERSION="3.19.1"
+COPY interactive_generic.tcl .
+RUN $SHELL --login -c './interactive_generic.tcl /install.sh $DUNE_VERSION "" ""'
+
+# Confirm that inside a sh shell, 'dune' now refers to the instance
+# installed by the install script.
+RUN $SHELL --login -c 'test "$(which dune)" = "/home/user/.local/bin/dune"'
+
+
+
+###############################################################################
 # Test that dune can be installed in the absence of opam when the login shell
 # is bash.
-FROM base AS test7
+FROM base AS test8
 RUN apk update && apk add bash curl expect
 
 # Create a user
@@ -208,7 +245,7 @@ RUN $SHELL --login -c 'test $(which dune) = "/home/user/.local/bin/dune"'
 ###############################################################################
 # Test that dune can be installed in the absence of opam when the login shell
 # is zsh.
-FROM base AS test8
+FROM base AS test9
 RUN apk update && apk add zsh curl expect
 
 # Create a user
@@ -232,7 +269,7 @@ RUN $SHELL --interactive -c 'test $(which dune) = "/home/user/.local/bin/dune"'
 ###############################################################################
 # Test that dune can be installed in the absence of opam when the login shell
 # is fish.
-FROM base AS test9
+FROM base AS test10
 RUN apk update && apk add fish curl expect
 
 # Create a user
@@ -254,11 +291,35 @@ RUN $SHELL -c 'test $(which dune) = "/home/user/.local/bin/dune"'
 
 
 ###############################################################################
+# Test that dune can be installed in the absence of opam when the login shell
+# is sh.
+FROM base AS test11
+RUN apk update && apk add curl expect
+
+# Create a user
+ENV SHELL=/bin/sh
+RUN adduser -D -s $SHELL user
+USER user
+WORKDIR /home/user
+
+# Install dune using the interactive installer taking the default option at
+# each prompt.
+ENV DUNE_VERSION="3.19.1"
+COPY interactive_generic.tcl .
+RUN $SHELL --login -c './interactive_generic.tcl /install.sh $DUNE_VERSION "" ""'
+
+# Confirm that inside a sh shell, 'dune' now refers to the instance
+# installed by the install script.
+RUN $SHELL --login -c 'test "$(which dune)" = "/home/user/.local/bin/dune"'
+
+
+
+###############################################################################
 # Test the options to override the tarball url and directory name. These flags
 # can be used to install dune from a tarball at an arbitrary url, so just point
 # them at the official release anyway as this will still exercise the logic for
 # downloading dune from a url passed on the command-line.
-FROM base AS test10
+FROM base AS test12
 RUN apk update && apk add curl
 ENV DUNE_VERSION="3.19.1"
 
@@ -291,3 +352,5 @@ COPY --from=test7 /install.sh .
 COPY --from=test8 /install.sh .
 COPY --from=test9 /install.sh .
 COPY --from=test10 /install.sh .
+COPY --from=test11 /install.sh .
+COPY --from=test12 /install.sh .
