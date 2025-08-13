@@ -8,9 +8,9 @@ set timeout 10
 # Dune will be installed to this temporary directory.
 set tmp [exec mktemp -d]
 
-# Run the install script, pointing it to a temporary bashrc, and forcing it to
-# assume bash is the current shell for portability.
-spawn ./install.sh 3.19.1 --shell-config $tmp/bashrc --shell bash
+# Run the install script, forcing it to assume bash is the current shell for
+# portability.
+spawn ./install.sh 3.19.1 --shell bash
 
 # The prompt for where dune will be installed. Try entering an invalid choice
 # to exercise input validation:
@@ -26,6 +26,22 @@ expect {
 expect "> "
 send "$tmp\r"
 expect "Dune successfully installed to $tmp!"
+
+# Now we're at the prompt for which shell config file to use.
+expect "Enter the absolute path of your bash config file or leave blank for default"
+expect "> "
+
+# Try sending an invalid value first to exercise input validation:
+send "foo\r"
+expect {
+    timeout { exit 1 }
+    "Not an absolute path: foo"
+}
+# Now we're back at the prompt for which shell config file to use. This time
+# enter a bashrc file in our temporary directory.
+expect "Enter the absolute path of your bash config file or leave blank for default"
+expect "> "
+send "$tmp/bashrc\r"
 
 # Now we're at the prompt for whether or not to update the shell config. Try
 # entering something invalid first to exercise input validation:
@@ -50,5 +66,6 @@ expect {
         "Unexpected contents of shell config!"
         exit 1
     }
-    "# From Dune installer:\r\nsource $tmp/share/dune/env/env.bash\r\n__dune_env $tmp"
+    "# BEGIN configuration from Dune installer"
+    "# END configuration from Dune installer"
 }
