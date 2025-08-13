@@ -57,3 +57,19 @@ jobs:
       run: ./install.sh 3.19.1 --install-root ~/.local --update-shell-config --shell bash --shell-config ~/.profile
     - name: "Run shellcheck on the generated shell config"
       run: shellcheck --exclude=SC1091 ~/.profile
+
+  shellcheck-on-generated-sh:
+    name: "Run shellcheck on the generated shell config for posix sh"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: "Install shellcheck"
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y shellcheck
+    - name: "Initialize shell config with shebang so shellcheck knows it's posix sh and not bash"
+      run: echo '#!/bin/sh' > ~/.profile
+    - name: "Generated a shell config by installing the binary distro"
+      run: ./install.sh 3.19.1 --install-root ~/.local --update-shell-config --shell sh --shell-config ~/.profile
+    - name: "Run shellcheck on the generated shell config"
+      run: shellcheck --exclude=SC1091 ~/.profile

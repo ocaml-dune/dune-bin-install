@@ -364,7 +364,7 @@ main () {
     case "$shell_name" in
         sh|ash|dash)
             shell_config_inferred="${shell_config:-$HOME/.profile}"
-            env_file="$env_dir/env.bash" # TODO: change this to env.sh once env.sh is added to the dune binary distro
+            env_file="$env_dir/env.sh"
             remove_opam_precmd_hook=$remove_opam_precmd_hook_posix
             ;;
         bash)
@@ -469,7 +469,8 @@ main () {
         echo "#   - makes sure the dune executable is available in your \$PATH"
         echo "#   - registers shell completions for dune if completions are available for your shell"
         echo "#   - removes opam's pre-command hook because it would override Dune's shell configuration"
-        echo "source \"$(unsubst_home "$env_file")\""
+        # Use `.` rather than `source` because the former is more portable.
+        echo ". \"$(unsubst_home "$env_file")\""
         echo "$dune_env_call"
         echo "$remove_opam_precmd_hook # remove opam's pre-command hook"
         echo "# END configuration from Dune installer"

@@ -15,6 +15,7 @@
 
 - Look up latest version if no version was specified (#7)
 - Add debugging options to override the url (#15)
+- Load env script for minimal posix shells such as ash and dash (#17)
 
 ### Changed
 
