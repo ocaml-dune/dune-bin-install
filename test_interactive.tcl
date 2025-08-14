@@ -25,10 +25,16 @@ expect {
 # enter the path to the temporary directory:
 expect "> "
 send "$tmp\r"
-expect "Dune successfully installed to $tmp!"
+expect {
+    timeout { exit 1 }
+    "Dune successfully installed to $tmp!"
+}
 
 # Now we're at the prompt for which shell config file to use.
-expect "Enter the absolute path of your bash config file or leave blank for default"
+expect {
+    timeout { exit 1 }
+    "Enter the absolute path of your shell config file or leave blank for default"
+}
 expect "> "
 
 # Try sending an invalid value first to exercise input validation:
@@ -39,13 +45,19 @@ expect {
 }
 # Now we're back at the prompt for which shell config file to use. This time
 # enter a bashrc file in our temporary directory.
-expect "Enter the absolute path of your bash config file or leave blank for default"
+expect {
+    timeout { exit 1 }
+    "Enter the absolute path of your shell config file or leave blank for default"
+}
 expect "> "
 send "$tmp/bashrc\r"
 
 # Now we're at the prompt for whether or not to update the shell config. Try
 # entering something invalid first to exercise input validation:
-expect "Would you like these lines to be appended to $tmp/bashrc?"
+expect {
+    timeout { exit 1 }
+    "Would you like these lines to be appended to $tmp/bashrc?"
+}
 send "foo\r"
 expect {
     timeout { exit 1 }
@@ -54,7 +66,10 @@ expect {
 
 # Now we're back at the prompt for whether or not to update the shell config.
 # This time enter "y".
-expect "Would you like these lines to be appended to $tmp/bashrc?"
+expect {
+    timeout { exit 1 }
+    "Would you like these lines to be appended to $tmp/bashrc?"
+}
 send "y\r"
 
 expect "This installer will now exit."
@@ -66,6 +81,7 @@ expect {
         "Unexpected contents of shell config!"
         exit 1
     }
+    timeout { exit 1 }
     "# BEGIN configuration from Dune installer"
     "# END configuration from Dune installer"
 }
