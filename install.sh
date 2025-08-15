@@ -92,7 +92,15 @@ main () {
 
     latest_binary_dune_version() {
         ensure_command "git"
-        git ls-remote --tags "$dune_bin_git_url" | cut -f2 | sed 's#^refs/tags/##' | tail -n1
+        git_url="$1"
+        allow_unstable="$2"
+        if [ "$allow_unstable" = "1" ]; then
+            filter='.*'
+        else
+            # matches stable version numbers like "1.2.3"
+            filter='^[0-9]\+\.[0-9]\+\.[0-9]\+$'
+        fi
+        git ls-remote --tags "$git_url" | cut -f2 | sed 's#^refs/tags/##' | grep "$filter" | sort -V | tail -n1
     }
 
     infer_shell_name() {
@@ -122,7 +130,9 @@ main () {
     }
 
     usage() {
-        echo "Usage: install.sh VERSION [options]"
+        echo "Usage: install.sh [VERSION] [options]"
+        echo
+        echo "Install a given version of the Dune binary distribution, or the latest stable version if VERSION is not specified."
         echo
         echo "Options:"
         echo "--help, -h                Print this help message"
@@ -131,12 +141,17 @@ main () {
         echo "--no-update-shell-config  Never update the shell config (e.g. .bashrc)"
         echo "--shell-config PATH       Use this file as your shell config when updating the shell config"
         echo "--shell SHELL             One of: bash, zsh, fish, sh. Installer will treat this as your shell. Use 'sh' for minimal posix shells such as ash"
+        echo "--allow-unstable          If no version is specified install latest version of Dune including unstable versions."
+        echo "--just-print-version      Make no changes to the system. The final line of stdout will be the version of dune that would have been installed"
         echo "--debug-override-url URL  Download dune tarball from given url (debugging only)"
         echo "--debug-tarball-dir DIR   Name of root directory inside tarball (debugging only)"
+        echo "--debug-version-repo REPO Override the git repo url used to determine the latest version of dune (debugging only)"
     }
 
     install_root=""
     should_update_shell_config=""
+    allow_unstable="0"
+    just_print_version="0"
     while [ "$#" -gt "0" ]; do
         arg="$1"
         shift
@@ -186,6 +201,12 @@ main () {
                         ;;
                 esac
                 ;;
+            --allow-unstable)
+                allow_unstable="1"
+                ;;
+            --just-print-version)
+                just_print_version="1"
+                ;;
             --debug-override-url)
                 if [ "$#" -eq "0" ]; then
                     error "--debug-override-url must be passed an argument"
@@ -198,6 +219,13 @@ main () {
                     error "--debug-tarball-dir must be passed an argument"
                 fi
                 debug_tarball_dir="$1"
+                shift
+                ;;
+            --debug-version-repo)
+                if [ "$#" -eq "0" ]; then
+                    error "--debug-version-repo must be passed an argument"
+                fi
+                debug_version_repo="$1"
                 shift
                 ;;
             -*)
@@ -223,10 +251,21 @@ main () {
         echo
         info "No Dune version was specified, so the installer will check the latest binary release of Dune..."
         echo
-        version=$(latest_binary_dune_version)
+        version=$(latest_binary_dune_version "${debug_version_repo:-"$dune_bin_git_url"}" "$allow_unstable")
         echo
         info "The latest binary release of Dune was found to be $version."
         echo
+    elif [ "$allow_unstable" = "1" ]; then
+        echo
+        error "--allow-unstable has no impact when version number is explicitly specified"
+    fi
+
+    if [ "$just_print_version" = "1" ]; then
+        echo
+        info "Exiting due to --just-print-version. Would install Dune version:"
+        echo
+        echo "$version"
+        exit
     fi
 
     case $(uname -ms) in
