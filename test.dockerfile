@@ -10,13 +10,13 @@
 
 FROM alpine:3.22.0 AS base
 COPY install.sh .
+ENV DUNE_VERSION="3.19.1"
 
 ###############################################################################
 # Use the install script to install Dune system-wide and assert some facts to
 # confirm that the installation succeeded.
 FROM base AS test1
 RUN apk update && apk add curl
-ENV DUNE_VERSION="3.19.1"
 
 # Install dune system-wide using the install script:
 RUN ./install.sh $DUNE_VERSION --install-root /usr --no-update-shell-config
@@ -49,7 +49,6 @@ RUN test $(which dune) = "/usr/bin/dune"
 # '~` at the prompt for install directory.
 FROM base AS test3
 RUN apk update && apk add curl expect
-ENV DUNE_VERSION="3.19.1"
 
 RUN adduser -D user
 USER user
@@ -58,7 +57,7 @@ COPY interactive_generic.tcl .
 
 # Run the interactive installer using expect to enter text at interactive
 # prompts.
-RUN ./interactive_generic.tcl /install.sh 3.19.1 '~/.local' ''
+RUN ./interactive_generic.tcl /install.sh "$DUNE_VERSION" '~/.local' ''
 RUN test -f ~/.local/bin/dune
 
 
@@ -92,7 +91,6 @@ RUN $SHELL --login -c 'test $(which dune) = "/home/user/.opam/default/bin/dune"'
 
 # Install dune using the interactive installer taking the default option at
 # each prompt.
-ENV DUNE_VERSION="3.19.1"
 COPY interactive_generic.tcl .
 RUN $SHELL --login -c './interactive_generic.tcl /install.sh $DUNE_VERSION "" ""'
 
@@ -134,7 +132,6 @@ RUN $SHELL --interactive -c 'test $(which dune) = "/home/user/.opam/default/bin/
 
 # Install dune using the interactive installer taking the default option at
 # each prompt.
-ENV DUNE_VERSION="3.19.1"
 COPY interactive_generic.tcl .
 RUN $SHELL --interactive -c './interactive_generic.tcl /install.sh $DUNE_VERSION "" ""'
 
@@ -171,7 +168,6 @@ RUN $SHELL -c 'test $(which dune) = "/home/user/.opam/default/bin/dune"'
 
 # Install dune using the interactive installer taking the default option at
 # each prompt.
-ENV DUNE_VERSION="3.19.1"
 COPY interactive_generic.tcl .
 RUN $SHELL -c './interactive_generic.tcl /install.sh $DUNE_VERSION "" ""'
 
@@ -208,7 +204,6 @@ RUN $SHELL --login -c 'test "$(which dune)" = "/home/user/.opam/default/bin/dune
 
 # Install dune using the interactive installer taking the default option at
 # each prompt.
-ENV DUNE_VERSION="3.19.1"
 COPY interactive_generic.tcl .
 RUN $SHELL --login -c './interactive_generic.tcl /install.sh $DUNE_VERSION "" ""'
 
@@ -232,7 +227,6 @@ WORKDIR /home/user
 
 # Install dune using the interactive installer taking the default option at
 # each prompt.
-ENV DUNE_VERSION="3.19.1"
 COPY interactive_generic.tcl .
 RUN $SHELL --login -c './interactive_generic.tcl /install.sh $DUNE_VERSION "" ""'
 
@@ -256,7 +250,6 @@ WORKDIR /home/user
 
 # Install dune using the interactive installer taking the default option at
 # each prompt.
-ENV DUNE_VERSION="3.19.1"
 COPY interactive_generic.tcl .
 RUN $SHELL --interactive -c './interactive_generic.tcl /install.sh $DUNE_VERSION "" ""'
 
@@ -280,7 +273,6 @@ WORKDIR /home/user
 
 # Install dune using the interactive installer taking the default option at
 # each prompt.
-ENV DUNE_VERSION="3.19.1"
 COPY interactive_generic.tcl .
 RUN $SHELL -c './interactive_generic.tcl /install.sh $DUNE_VERSION "" ""'
 
@@ -304,7 +296,6 @@ WORKDIR /home/user
 
 # Install dune using the interactive installer taking the default option at
 # each prompt.
-ENV DUNE_VERSION="3.19.1"
 COPY interactive_generic.tcl .
 RUN $SHELL --login -c './interactive_generic.tcl /install.sh $DUNE_VERSION "" ""'
 
@@ -321,7 +312,6 @@ RUN $SHELL --login -c 'test "$(which dune)" = "/home/user/.local/bin/dune"'
 # downloading dune from a url passed on the command-line.
 FROM base AS test12
 RUN apk update && apk add curl
-ENV DUNE_VERSION="3.19.1"
 
 # Install dune system-wide using the install script:
 RUN ./install.sh $DUNE_VERSION --install-root /usr --no-update-shell-config \
