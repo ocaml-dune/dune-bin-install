@@ -18,6 +18,8 @@ main() {
         echo "$@"
     }
 
+    DUNE_VERSION="3.19.1"
+
     test_title "Test that only a single anonymous argument is allowed:"
     install foo bar
 
@@ -25,25 +27,25 @@ main() {
     install --foo
 
     test_title "Test that omitting the argument to --install-root is an error:"
-    install 3.19.1 --install-root
+    install "$DUNE_VERSION" --install-root
 
     test_title "Test that passing anything other than an absolute path to --install-root is an error:"
-    install 3.19.1 --install-root foo
+    install "$DUNE_VERSION" --install-root foo
 
     test_title "Test that --shell-config requires an argument:"
-    install 3.19.1 --shell-config
+    install "$DUNE_VERSION" --shell-config
 
     test_title "Test that --shell requires an argument:"
-    install 3.19.1 --shell
+    install "$DUNE_VERSION" --shell
 
     test_title "Test that --shell validates its argument:"
-    install 3.19.1 --shell foo
+    install "$DUNE_VERSION" --shell foo
 
     test_title "Test that --debug-override-url requires an argument:"
-    install 3.19.1 --debug-override-url
+    install "$DUNE_VERSION" --debug-override-url
 
     test_title "Test that --debug-tarball-dir requires an argument:"
-    install 3.19.1 --debug-tarball-dir
+    install "$DUNE_VERSION" --debug-tarball-dir
 }
 
 main "$@" 2>&1
