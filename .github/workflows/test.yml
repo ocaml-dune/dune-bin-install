@@ -41,3 +41,19 @@ jobs:
         sudo apt-get install -y shellcheck
     - name: "Run shellcheck on all shell scripts"
       run: shellcheck *.sh
+
+  shellcheck-on-generated-bash:
+    name: "Run shellcheck on the generated shell config for bash"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: "Install shellcheck"
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y shellcheck
+    - name: "Initialize shell config with shebang so shellcheck knows it's bash"
+      run: echo '#!/usr/bin/env bash' > ~/.profile
+    - name: "Generated a shell config by installing the binary distro"
+      run: ./install.sh 3.19.1 --install-root ~/.local --update-shell-config --shell bash --shell-config ~/.profile
+    - name: "Run shellcheck on the generated shell config"
+      run: shellcheck --exclude=SC1091 ~/.profile

@@ -438,7 +438,7 @@ main () {
         echo
     fi
 
-    dune_env_call="__dune_env $(unsubst_home "$install_root")"
+    dune_env_call="__dune_env \"$(unsubst_home "$install_root")\""
     shell_config_code() {
         echo
         echo "# BEGIN configuration from Dune installer"
@@ -447,7 +447,7 @@ main () {
         echo "#   - makes sure the dune executable is available in your \$PATH"
         echo "#   - registers shell completions for dune if completions are available for your shell"
         echo "#   - removes opam's pre-command hook because it would override Dune's shell configuration"
-        echo "source $(unsubst_home "$env_file")"
+        echo "source \"$(unsubst_home "$env_file")\""
         echo "$dune_env_call"
         echo "$remove_opam_precmd_hook # remove opam's pre-command hook"
         echo "# END configuration from Dune installer"
