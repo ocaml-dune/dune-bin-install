@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-### Fixes
+### Fixed
 
 - Handle the case when the `$SHELL` variable is unset (#13)
 - Make sure directory containing shell config exists before updating shell
@@ -29,7 +29,7 @@
 
 ## v1
 
-### Fixes
+### Fixed
 
 - Fix bug where install script assumed `$shell` to initially be unset, which is
   not always true (#5)
@@ -40,7 +40,7 @@
 
 ## v0
 
-### Fixes
+### Fixed
 
 ### Added
 
