@@ -462,6 +462,17 @@ main () {
 
     dune_env_call="__dune_env \"$(unsubst_home "$install_root")\""
     shell_config_code() {
+        case "$shell_name" in
+            fish)
+                if_installed="if [ -f \"$(unsubst_home "$env_file")\" ]"
+                end_if="end"
+                ;;
+            *)
+                if_installed="if [ -f \"$(unsubst_home "$env_file")\" ]; then"
+                end_if="fi"
+                ;;
+        esac
+
         echo
         echo "# BEGIN configuration from Dune installer"
         echo "# This configuration must be placed after any opam configuration in your shell config file."
@@ -469,10 +480,12 @@ main () {
         echo "#   - makes sure the dune executable is available in your \$PATH"
         echo "#   - registers shell completions for dune if completions are available for your shell"
         echo "#   - removes opam's pre-command hook because it would override Dune's shell configuration"
-        # Use `.` rather than `source` because the former is more portable.
-        echo ". \"$(unsubst_home "$env_file")\""
-        echo "$dune_env_call"
-        echo "$remove_opam_precmd_hook # remove opam's pre-command hook"
+        echo "$if_installed"
+            # Use `.` rather than `source` because the former is more portable.
+            echo ". \"$(unsubst_home "$env_file")\""
+            echo "$dune_env_call"
+            echo "$remove_opam_precmd_hook # remove opam's pre-command hook"
+        echo "$end_if"
         echo "# END configuration from Dune installer"
     }
 

@@ -10,6 +10,8 @@
 - Remove opam's shell hooks if present, which would have caused any dune
   installed with opam to be run instead of the dune installed by this script
   when running `dune` in the terminal. (#14)
+- Prevent error when sourcing modified shell config when dune binary distro is
+  not installed (#18)
 
 ### Added
 
