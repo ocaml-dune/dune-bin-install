@@ -12,6 +12,8 @@
   when running `dune` in the terminal. (#14)
 - Prevent error when sourcing modified shell config when dune binary distro is
   not installed (#18)
+- When the version number is omitted, choose the latest _stable_ version of
+  dune (#21).
 
 ### Added
 

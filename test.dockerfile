@@ -423,6 +423,48 @@ RUN $SHELL checked-config.fish
 
 
 ###############################################################################
+# Test the logic for choosing which version of dune to install. This test uses
+# entirely fictional versions of dune to clarify that it does not look at the
+# real dune repo.
+FROM base AS test16
+RUN apk update && apk add curl git
+
+# Initialize a git repo whose tags will be used to indicate releases.
+ENV GIT_COMMITTER_NAME=user
+ENV GIT_COMMITTER_EMAIL=user@example.com
+ENV GIT_AUTHOR_NAME=user
+ENV GIT_AUTHOR_EMAIL=user@example.com
+ENV GIT_AUTHOR_EMAIL=user@example.com
+RUN git init /dune-versions
+RUN git -C /dune-versions commit --allow-empty --message dummy
+
+# When there is a single version, that version is installed.
+RUN git -C /dune-versions tag 0.1.0 && \
+    test $(./install.sh --just-print-version --debug-version-repo /dune-versions | tail -n1) = "0.1.0"
+
+# When there are multiple versions, the latest version is installed.
+RUN git -C /dune-versions tag 0.2.0 && \
+    test $(./install.sh --just-print-version --debug-version-repo /dune-versions | tail -n1) = "0.2.0"
+
+# When the most-recently released version is not the latest version (by version
+# number), the installer will still choose the latest version.
+RUN git -C /dune-versions tag 0.1.1 && \
+    test $(./install.sh --just-print-version --debug-version-repo /dune-versions | tail -n1) = "0.2.0"
+
+# When the latest version version is not the last version in alpabetical order,
+# the installer will still choose the latest version.
+RUN git -C /dune-versions tag 0.10.0 && \
+    test $(./install.sh --just-print-version --debug-version-repo /dune-versions | tail -n1) = "0.10.0"
+
+# When the latest version is not a stable version (indicated by additional text
+# after the semver triple) then the installer will install the latest stable
+# version.
+RUN git -C /dune-versions tag 0.11.0_alpha && \
+    test $(./install.sh --just-print-version --debug-version-repo /dune-versions | tail -n1) = "0.10.0"
+
+
+
+###############################################################################
 # Final stage that copies the install scripts from the previous stage to force
 # them to be rerun after the script changes. Docker won't rerun stages which
 # don't affect the final stage, even if their inputs change.
@@ -442,3 +484,4 @@ COPY --from=test12 /install.sh .
 COPY --from=test13 /install.sh .
 COPY --from=test14 /install.sh .
 COPY --from=test15 /install.sh .
+COPY --from=test16 /install.sh .
