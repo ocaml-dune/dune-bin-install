@@ -14,6 +14,8 @@
   not installed (#18)
 - When the version number is omitted, choose the latest _stable_ version of
   dune (#21).
+- Infer the user's shell when from the parent process's command when the
+  `$SHELL` environment variable is unset (#25).
 
 ### Added
 
