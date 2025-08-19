@@ -102,25 +102,81 @@ main () {
         git ls-remote --tags "$git_url" | cut -f2 | sed 's#^refs/tags/##' | grep "$stable_version_filter" | sort -V | tail -n1
     }
 
+    get_parent_pid_of_pid() {
+        # Get the PID of the parent of a given process, specified by PID.
+        pid="$1"
+        # Use awk to select the appropriate line of output rather than ps's own
+        # filtering as the latter is not always available (e.g. in busybox's ps
+        # implementation - the default for alpine linux).
+        ps -o pid=,ppid= | awk "\$1==$pid {print \$2}"
+    }
+
+    get_command_of_pid() {
+        # Get the command of the parent of a given process, specified by PID.
+        pid="$1"
+        # Take the first word of its command. Sometimes the command is prefixed
+        # with a "-" indicating a login shell, so strip any leading "-"
+        # character. Use awk to select the appropriate line of output rather
+        # than ps's own filtering as the latter is not always available (e.g.
+        # in busybox's ps implementation - the default for alpine linux).
+        ps -o pid=,comm= | awk "\$1==$pid {print \$2}" | sed 's/^-//'
+    }
+
     infer_shell_name() {
-        # In most environments the $SHELL variable will be set to shell in the
-        # current user's login info. However the case that the $SHELL variable
-        # is unset we can still infer the user's shell from the presence of
-        # other environment variables. The goal here is to determine the shell
-        # from which the user ran the install script, the idea being that
-        # that's the shell whose config file they'll (possibly) want the script
-        # to update.
         if [ -n "${SHELL+x}" ]; then
+            # The SHELL variable is often a variable within the current shell
+            # session but is rarely exported as an environment variable.
+            # Consequently it won't be inherited by the /bin/sh process running
+            # this script, and thus will be unset. If SHELL is set here, this
+            # means the user chose to export it as an environment variable,
+            # e.g. by choosing to add `export SHELL` to their shell config file
+            # or with a line like `ENV SHELL=/bin/bash` in a Dockerfile. We'll
+            # interpret the presence of a SHELL environment variable to mean
+            # that the user wants to treat its value as their shell.
             basename "$SHELL"
         else
-            if [ -n "${BASH_VERSINFO+x}" ]; then
-                echo "bash"
-            elif [ -n "${ZSH_VERSION+x}" ]; then
-                echo "zsh"
-            else
-                warn "Unable to identify your shell. Assuming posix sh. Rerun the installer with the '--shell' option to override."
-                echo "sh"
+            # This is the common case. If this script was started by piping a
+            # command to /bin/sh or otherwise running the script from the
+            # command-line then its parent process will be the user's shell.
+            # This is a more reliable way to determine the user's shell than
+            # the contents of this process's environment since the variables
+            # that might indicate the user's shell are rarely exported as
+            # environment variables (ie. they are shell variables instead).
+
+            # Get the PID of the parent of this process.
+            parent_pid=$(get_parent_pid_of_pid $$)
+            if [ -n "$parent_pid" ] && [ "$parent_pid" != "0" ]; then
+                # Get the command of the parent process to find out the user's shell.
+                parent_command=$(basename "$(get_command_of_pid "$parent_pid")")
+                case "$parent_command" in
+                    expect)
+                        # If the parent command was "expect" we can infer that
+                        # the script is being run interactively by the "expect"
+                        # program. This happens in some tests of the
+                        # interactive elements of this script, and it's also
+                        # possible that a user may also run the script via
+                        # "expect" in production (though hopefully not!)
+                        # instead of passing arguments on the command-line.
+                        # When this happens, the user's shell is probably the
+                        # parent of the expect process (ie. the grandparent of
+                        # the current process).
+                        grandparent_pid=$(get_parent_pid_of_pid "$parent_pid")
+                        if [ -n "$grandparent_pid" ] && [ "$grandparent_pid" != "0" ]; then
+                            grandparent_command=$(basename "$(get_command_of_pid "$grandparent_pid")")
+                            if [ "$grandparent_command" != "expect" ]; then
+                                echo "$grandparent_command"
+                                return
+                            fi
+                        fi
+                        ;;
+                    *)
+                        echo "$parent_command"
+                        return
+                        ;;
+                esac
             fi
+            warn "Unable to identify your shell. Assuming posix sh. Rerun the installer with the '--shell' option to override."
+            echo "sh"
         fi
     }
 
@@ -452,6 +508,8 @@ main () {
 
     if [ -z "${shell_config+x}" ]; then
         info "The installer can modify your shell config file to set up your environment for running dune from your terminal."
+        echo
+        info "The installer has inferred that your shell is: $shell_name. If this is incorrect, rerun the installer with --shell."
         echo
         if [ -z "${bash_opam_init_match+x}" ]; then
             info "Based on your shell ($shell_name) the installer has inferred that your shell config file is: $shell_config_inferred"
