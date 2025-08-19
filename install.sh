@@ -180,6 +180,22 @@ main () {
         fi
     }
 
+    read_checked() {
+        # Reads from either the terminal device or stdin depending on its
+        # argument. Reading directly from the terminal is necessary when the
+        # script is piped to /bin/sh, such as when installing by running the
+        # `curl ... | sh` command. But when reading from the terminal it's not
+        # possible use io redirection to populate the interactive fields, which
+        # is sometimes helpful to do when testing.
+        tty="$1"
+        if [ "$tty" = "1" ]; then
+            read -r input < /dev/tty
+        else
+            read -r input
+        fi
+        echo "$input"
+    }
+
     exit_message() {
         info_bold "This installer will now exit."
     }
@@ -199,6 +215,7 @@ main () {
         echo "--shell-config PATH       Use this file as your shell config when updating the shell config"
         echo "--shell SHELL             One of: bash, zsh, fish, sh. Installer will treat this as your shell. Use 'sh' for minimal posix shells such as ash"
         echo "--just-print-version      Make no changes to the system. The final line of stdout will be the version of dune that would have been installed"
+        echo "--no-tty                  Read interactive input from stdin rather than the terminal device (allows automation via yes et al.)"
         echo "--debug-override-url URL  Download dune tarball from given url (debugging only)"
         echo "--debug-tarball-dir DIR   Name of root directory inside tarball (debugging only)"
         echo "--debug-version-repo REPO Override the git repo url used to determine the latest version of dune (debugging only)"
@@ -207,6 +224,7 @@ main () {
     install_root=""
     should_update_shell_config=""
     just_print_version="0"
+    tty="1"
     while [ "$#" -gt "0" ]; do
         arg="$1"
         shift
@@ -258,6 +276,9 @@ main () {
                 ;;
             --just-print-version)
                 just_print_version="1"
+                ;;
+            --no-tty)
+                tty="0"
                 ;;
             --debug-override-url)
                 if [ "$#" -eq "0" ]; then
@@ -368,8 +389,7 @@ main () {
         info "2) $install_root_dune$install_root_dune_message"
         echo
         info_bold "[$default_install_root] >"
-        read -r choice < /dev/tty
-
+        choice=$(read_checked "$tty")
         case "$choice" in
             "")
                 install_root=$default_install_root
@@ -528,7 +548,7 @@ main () {
             info "Enter the absolute path of your shell config file or leave blank for default (no modification will be performed yet):"
             echo
             info_bold "[$shell_config_inferred] >"
-            read -r choice < /dev/tty
+            choice=$(read_checked "$tty")
             case "$choice" in
                 "")
                     shell_config=$shell_config_inferred
@@ -601,7 +621,7 @@ main () {
 
     while [ -z "$should_update_shell_config" ]; do
         info_bold "Would you like these lines to be appended to $shell_config? ([y]/n) >"
-        read -r choice < /dev/tty
+        choice=$(read_checked "$tty")
         case "$choice" in
             "")
                 should_update_shell_config="y"

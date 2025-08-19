@@ -581,6 +581,126 @@ RUN grep env\.fish ~/.config/fish/config.fish
 
 
 ###############################################################################
+# Test that the install script correctly infers the shell when the SHELL
+# environment variable is not set when the shell is sh, avoiding the use of
+# expect.
+FROM base AS test23
+RUN apk update && apk add curl expect
+COPY interactive_generic.tcl .
+RUN adduser -D user
+USER user
+WORKDIR /home/user
+
+# Run the interactive installer in a shell. The final ':' is a noop to force
+# the installer to run in a child process of bash, preventing the shell from
+# exec-ing into expect instead. This simulates running the interactive
+# installer from the command-line.
+RUN sh -c "yes '' | /install.sh --no-tty $DUNE_VERSION; :"
+RUN grep env\.sh ~/.profile
+
+
+
+###############################################################################
+#Test that the install script correctly infers the shell when the SHELL
+#environment variable is not set when the shell is ash (a minimal posix shell
+#which should be handled the same as sh), avoiding the use of expect.
+FROM base AS test24
+RUN apk update && apk add curl expect
+COPY interactive_generic.tcl .
+RUN adduser -D user
+USER user
+WORKDIR /home/user
+
+# Run the interactive installer in a shell. The final ':' is a noop to force
+# the installer to run in a child process of bash, preventing the shell from
+# exec-ing into expect instead. This simulates running the interactive
+# installer from the command-line.
+RUN ash -c "yes '' | /install.sh --no-tty $DUNE_VERSION; :"
+RUN grep env\.sh ~/.profile
+
+
+
+###############################################################################
+# Test that the install script correctly infers the shell when the SHELL
+# environment variable is not set when the shell is dash (a minimal posix shell
+# which should be handled the same as sh), avoiding the use of expect.
+FROM base AS test25
+RUN apk update && apk add curl expect dash
+COPY interactive_generic.tcl .
+RUN adduser -D user
+USER user
+WORKDIR /home/user
+
+# Run the interactive installer in a shell. The final ':' is a noop to force
+# the installer to run in a child process of bash, preventing the shell from
+# exec-ing into expect instead. This simulates running the interactive
+# installer from the command-line.
+RUN dash -c "yes '' | /install.sh --no-tty $DUNE_VERSION; :"
+RUN grep env\.sh ~/.profile
+
+
+
+###############################################################################
+# Test that the install script correctly infers the shell when the SHELL
+# environment variable is not set when the shell is bash, avoiding the use of
+# expect.
+FROM base AS test26
+RUN apk update && apk add curl expect bash
+COPY interactive_generic.tcl .
+RUN adduser -D user
+USER user
+WORKDIR /home/user
+
+# Run the interactive installer in a shell. The final ':' is a noop to force
+# the installer to run in a child process of bash, preventing the shell from
+# exec-ing into expect instead. This simulates running the interactive
+# installer from the command-line.
+RUN bash -c "yes '' | /install.sh --no-tty $DUNE_VERSION; :"
+RUN grep env\.bash ~/.profile
+
+
+
+###############################################################################
+# Test that the install script correctly infers the shell when the SHELL
+# environment variable is not set when the shell is zsh, avoiding the use of
+# expect.
+FROM base AS test27
+RUN apk update && apk add curl expect zsh
+COPY interactive_generic.tcl .
+RUN adduser -D user
+USER user
+WORKDIR /home/user
+
+# Run the interactive installer in a shell. The final ':' is a noop to force
+# the installer to run in a child process of bash, preventing the shell from
+# exec-ing into expect instead. This simulates running the interactive
+# installer from the command-line.
+RUN zsh -c "yes '' | /install.sh --no-tty $DUNE_VERSION; :"
+RUN grep env\.zsh ~/.zshrc
+
+
+
+###############################################################################
+# Test that the install script correctly infers the shell when the SHELL
+# environment variable is not set when the shell is fish, avoiding the use of
+# expect.
+FROM base AS test28
+RUN apk update && apk add curl expect fish
+COPY interactive_generic.tcl .
+RUN adduser -D user
+USER user
+WORKDIR /home/user
+
+# Run the interactive installer in a shell. The final ':' is a noop to force
+# the installer to run in a child process of bash, preventing the shell from
+# exec-ing into expect instead. This simulates running the interactive
+# installer from the command-line.
+RUN fish -c "yes '' | /install.sh --no-tty $DUNE_VERSION; :"
+RUN grep env\.fish ~/.config/fish/config.fish
+
+
+
+###############################################################################
 # Final stage that copies the install scripts from the previous stage to force
 # them to be rerun after the script changes. Docker won't rerun stages which
 # don't affect the final stage, even if their inputs change.
@@ -607,3 +727,9 @@ COPY --from=test19 /install.sh .
 COPY --from=test20 /install.sh .
 COPY --from=test21 /install.sh .
 COPY --from=test22 /install.sh .
+COPY --from=test23 /install.sh .
+COPY --from=test24 /install.sh .
+COPY --from=test25 /install.sh .
+COPY --from=test26 /install.sh .
+COPY --from=test27 /install.sh .
+COPY --from=test28 /install.sh .
