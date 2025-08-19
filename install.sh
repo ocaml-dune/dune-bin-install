@@ -48,6 +48,10 @@ main () {
          printf "%b%s %b" "$White" "$*" "$Color_Off"
     }
 
+    code() {
+        printf "%s\n" "$1"
+    }
+
     info_bold() {
         printf "%b%s %b" "$Bold_White" "$*" "$Color_Off"
     }
@@ -501,20 +505,20 @@ main () {
                 ;;
         esac
 
-        echo
-        echo "# BEGIN configuration from Dune installer"
-        echo "# This configuration must be placed after any opam configuration in your shell config file."
-        echo "# This performs several tasks to configure your shell for Dune:"
-        echo "#   - makes sure the dune executable is available in your \$PATH"
-        echo "#   - registers shell completions for dune if completions are available for your shell"
-        echo "#   - removes opam's pre-command hook because it would override Dune's shell configuration"
-        echo "$if_installed"
+        code ""
+        code "# BEGIN configuration from Dune installer"
+        code "# This configuration must be placed after any opam configuration in your shell config file."
+        code "# This performs several tasks to configure your shell for Dune:"
+        code "#   - makes sure the dune executable is available in your \$PATH"
+        code "#   - registers shell completions for dune if completions are available for your shell"
+        code "#   - removes opam's pre-command hook because it would override Dune's shell configuration"
+        code "$if_installed"
         # Use `.` rather than `source` because the former is more portable.
-        echo "    . \"$(unsubst_home "$env_file")\""
-        echo "    $dune_env_call"
-        echo "    $remove_opam_precmd_hook # remove opam's pre-command hook"
-        echo "$end_if"
-        echo "# END configuration from Dune installer"
+        code "    . \"$(unsubst_home "$env_file")\""
+        code "    $dune_env_call"
+        code "    $remove_opam_precmd_hook # remove opam's pre-command hook"
+        code "$end_if"
+        code "# END configuration from Dune installer"
     }
 
     if [ -f "$shell_config" ] && match=$(grep -Hn "$(echo "$dune_env_call" | sed 's#\$#\\$#')" "$shell_config"); then
