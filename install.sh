@@ -509,10 +509,10 @@ main () {
         echo "#   - registers shell completions for dune if completions are available for your shell"
         echo "#   - removes opam's pre-command hook because it would override Dune's shell configuration"
         echo "$if_installed"
-            # Use `.` rather than `source` because the former is more portable.
-            echo ". \"$(unsubst_home "$env_file")\""
-            echo "$dune_env_call"
-            echo "$remove_opam_precmd_hook # remove opam's pre-command hook"
+        # Use `.` rather than `source` because the former is more portable.
+        echo "    . \"$(unsubst_home "$env_file")\""
+        echo "    $dune_env_call"
+        echo "    $remove_opam_precmd_hook # remove opam's pre-command hook"
         echo "$end_if"
         echo "# END configuration from Dune installer"
     }
