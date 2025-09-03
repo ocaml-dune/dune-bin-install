@@ -441,7 +441,7 @@ main () {
     fi
     curl --fail --location --progress-bar \
         --proto "$curl_proto" --tlsv1.2 \
-        --output "$tmp_tar" "$tar_uri" ||
+        --output "$tmp_tar" --ipv4 "$tar_uri" ||
         error_download_failed "$tar_uri" "$version"
 
     tar -xf "$tmp_tar" -C "$tmp_dir" "$tar_owner" > /dev/null 2>&1 ||

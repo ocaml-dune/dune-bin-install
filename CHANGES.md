@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+## Fixed
+
+- Force ipv4 when downloading from github. (#27)
+
 ## v2
 
 ### Fixed
