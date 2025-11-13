@@ -468,12 +468,10 @@ main () {
 
     shell_name=${shell_name:-$(infer_shell_name)}
     env_dir="$install_root/share/dune/env"
-    remove_opam_precmd_hook_posix="PROMPT_COMMAND=\"\$(echo \"\$PROMPT_COMMAND\" | tr ';' '\\n' | grep -v _opam_env_hook | paste -sd ';' -)\""
     case "$shell_name" in
         sh|ash|dash)
             shell_config_inferred="${shell_config:-$HOME/.profile}"
             env_file="$env_dir/env.sh"
-            remove_opam_precmd_hook=$remove_opam_precmd_hook_posix
             ;;
         bash)
             bash_config_candidates="$HOME/.profile $HOME/.bash_profile $HOME/.bashrc"
@@ -503,17 +501,14 @@ main () {
             done
             shell_config_inferred="${shell_config_with_opam_init:-$HOME/.profile}"
             env_file="$env_dir/env.bash"
-            remove_opam_precmd_hook=$remove_opam_precmd_hook_posix
             ;;
         zsh)
             env_file="$env_dir/env.zsh"
             shell_config_inferred="$HOME/.zshrc"
-            remove_opam_precmd_hook="autoload -Uz add-zsh-hook; add-zsh-hook -d precmd _opam_env_hook"
             ;;
         fish)
             env_file="$env_dir/env.fish"
             shell_config_inferred="$HOME/.config/fish/config.fish"
-            remove_opam_precmd_hook="functions --erase __opam_env_export_eval"
             ;;
         *)
             info "The install script does not recognize your shell ($shell_name)."
@@ -589,12 +584,10 @@ main () {
         code "# This performs several tasks to configure your shell for Dune:"
         code "#   - makes sure the dune executable is available in your \$PATH"
         code "#   - registers shell completions for dune if completions are available for your shell"
-        code "#   - removes opam's pre-command hook because it would override Dune's shell configuration"
         code "$if_installed"
         # Use `.` rather than `source` because the former is more portable.
         code "    . \"$(unsubst_home "$env_file")\""
         code "    $dune_env_call"
-        code "    $remove_opam_precmd_hook # remove opam's pre-command hook"
         code "$end_if"
         code "# END configuration from Dune installer"
     }

@@ -1,8 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Don't remove opam shell hook. (#29)
+
 ## v3
 
-## Fixed
+### Fixed
 
 - Force ipv4 when downloading from github. (#27)
 
