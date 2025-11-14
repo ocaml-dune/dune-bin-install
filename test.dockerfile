@@ -63,160 +63,9 @@ RUN test -f ~/.local/bin/dune
 
 
 ###############################################################################
-# Test that dune can be installed alongside opam, and prevents opam's shell
-# hook from interfering with PATH such that the install script's instance of
-# dune takes precedence. This test uses bash as the login shell. Shell commands
-# are run with `bash --login` so that ~/.profile or ~/.bash_profile is loaded
-# into the shell.
-FROM base AS test4
-RUN apk update && apk add bash curl expect rsync git make pkgconf clang
-
-# Install opam from its binary distribution
-RUN curl -fsSL https://opam.ocaml.org/install.sh > install_opam.sh && yes '' | sh install_opam.sh
-
-# Create a user
-ENV SHELL=/bin/bash
-RUN adduser -D -s $SHELL user
-USER user
-WORKDIR /home/user
-
-# Initialize opam for the user and install dune in their default switch using
-# opam
-RUN $SHELL --login -c 'opam init --disable-sandbox --auto-setup'
-RUN $SHELL --login -c 'opam install dune'
-
-# Before the binary distro of dune is installed, 'dune' refers to the instance
-# installed by opam.
-RUN $SHELL --login -c 'test $(which dune) = "/home/user/.opam/default/bin/dune"'
-
-# Install dune using the interactive installer taking the default option at
-# each prompt.
-COPY interactive_generic.tcl .
-RUN $SHELL --login -c './interactive_generic.tcl /install.sh $DUNE_VERSION "" ""'
-
-# Confirm that inside a bash login shell, 'dune' now refers to the instance
-# installed by the install script.
-RUN $SHELL --login -c 'test $(which dune) = "/home/user/.local/bin/dune"'
-
-
-
-###############################################################################
-# Test that dune can be installed alongside opam, and prevents opam's shell
-# hook from interfering with PATH such that the install script's instance of
-# dune takes precedence. This test uses zsh as the login shell. Note that each
-# command is run inside an interactive zsh shell. Zsh does not source the
-# .zshrc file unless it's running an interactive shell, and opam and Dune both
-# put their configurations in .zshrc so the environments for both only work
-# correctly inside an interactive shell. Shell commands are run with `zsh
-# --interactive` so that ~/.zshrc is loaded into the shell.
-FROM base AS test5
-RUN apk update && apk add zsh curl expect rsync git make pkgconf clang
-
-# Install opam from its binary distribution
-RUN curl -fsSL https://opam.ocaml.org/install.sh > install_opam.sh && yes '' | sh install_opam.sh
-
-# Create a user
-ENV SHELL=/bin/zsh
-RUN adduser -D -s $SHELL user
-USER user
-WORKDIR /home/user
-
-# Initialize opam for the user and install dune in their default switch using
-# opam
-RUN $SHELL --interactive -c 'opam init --disable-sandbox --auto-setup'
-RUN $SHELL --interactive -c 'opam install dune'
-
-# Before the binary distro of dune is installed, 'dune' refers to the instance
-# installed by opam.
-RUN $SHELL --interactive -c 'test $(which dune) = "/home/user/.opam/default/bin/dune"'
-
-# Install dune using the interactive installer taking the default option at
-# each prompt.
-COPY interactive_generic.tcl .
-RUN $SHELL --interactive -c './interactive_generic.tcl /install.sh $DUNE_VERSION "" ""'
-
-# Confirm that inside a zsh interactive shell, 'dune' now refers to the instance
-# installed by the install script.
-RUN $SHELL --interactive -c 'test $(which dune) = "/home/user/.local/bin/dune"'
-
-
-
-###############################################################################
-# Test that dune can be installed alongside opam, and prevents opam's shell
-# hook from interfering with PATH such that the install script's instance of
-# dune takes precedence. This test uses fish as the login shell.
-FROM base AS test6
-RUN apk update && apk add fish curl expect rsync git make pkgconf clang
-
-# Install opam from its binary distribution
-RUN curl -fsSL https://opam.ocaml.org/install.sh > install_opam.sh && yes '' | sh install_opam.sh
-
-# Create a user
-ENV SHELL=/usr/bin/fish
-RUN adduser -D -s $SHELL user
-USER user
-WORKDIR /home/user
-
-# Initialize opam for the user and install dune in their default switch using
-# opam
-RUN $SHELL -c 'opam init --disable-sandbox --auto-setup'
-RUN $SHELL -c 'opam install dune'
-
-# Before the binary distro of dune is installed, 'dune' refers to the instance
-# installed by opam.
-RUN $SHELL -c 'test $(which dune) = "/home/user/.opam/default/bin/dune"'
-
-# Install dune using the interactive installer taking the default option at
-# each prompt.
-COPY interactive_generic.tcl .
-RUN $SHELL -c './interactive_generic.tcl /install.sh $DUNE_VERSION "" ""'
-
-# Confirm that inside a fish shell, 'dune' now refers to the instance
-# installed by the install script.
-RUN $SHELL -c 'test $(which dune) = "/home/user/.local/bin/dune"'
-
-
-
-###############################################################################
-# Test that dune can be installed alongside opam, and prevents opam's shell
-# hook from interfering with PATH such that the install script's instance of
-# dune takes precedence. This test uses sh as the login shell.
-FROM base AS test7
-RUN apk update && apk add curl expect rsync git make pkgconf clang
-
-# Install opam from its binary distribution
-RUN curl -fsSL https://opam.ocaml.org/install.sh > install_opam.sh && yes '' | sh install_opam.sh
-
-# Create a user
-ENV SHELL=/bin/sh
-RUN adduser -D -s $SHELL user
-USER user
-WORKDIR /home/user
-
-# Initialize opam for the user and install dune in their default switch using
-# opam
-RUN $SHELL -c 'opam init --disable-sandbox --auto-setup'
-RUN $SHELL -c 'opam install dune'
-
-# Before the binary distro of dune is installed, 'dune' refers to the instance
-# installed by opam.
-RUN $SHELL --login -c 'test "$(which dune)" = "/home/user/.opam/default/bin/dune"'
-
-# Install dune using the interactive installer taking the default option at
-# each prompt.
-COPY interactive_generic.tcl .
-RUN $SHELL --login -c './interactive_generic.tcl /install.sh $DUNE_VERSION "" ""'
-
-# Confirm that inside a sh shell, 'dune' now refers to the instance
-# installed by the install script.
-RUN $SHELL --login -c 'test "$(which dune)" = "/home/user/.local/bin/dune"'
-
-
-
-###############################################################################
 # Test that dune can be installed in the absence of opam when the login shell
 # is bash.
-FROM base AS test8
+FROM base AS test4
 RUN apk update && apk add bash curl expect
 
 # Create a user
@@ -239,7 +88,7 @@ RUN $SHELL --login -c 'test $(which dune) = "/home/user/.local/bin/dune"'
 ###############################################################################
 # Test that dune can be installed in the absence of opam when the login shell
 # is zsh.
-FROM base AS test9
+FROM base AS test5
 RUN apk update && apk add zsh curl expect
 
 # Create a user
@@ -262,7 +111,7 @@ RUN $SHELL --interactive -c 'test $(which dune) = "/home/user/.local/bin/dune"'
 ###############################################################################
 # Test that dune can be installed in the absence of opam when the login shell
 # is fish.
-FROM base AS test10
+FROM base AS test6
 RUN apk update && apk add fish curl expect
 
 # Create a user
@@ -285,7 +134,7 @@ RUN $SHELL -c 'test $(which dune) = "/home/user/.local/bin/dune"'
 ###############################################################################
 # Test that dune can be installed in the absence of opam when the login shell
 # is sh.
-FROM base AS test11
+FROM base AS test7
 RUN apk update && apk add curl expect
 
 # Create a user
@@ -310,7 +159,7 @@ RUN $SHELL --login -c 'test "$(which dune)" = "/home/user/.local/bin/dune"'
 # can be used to install dune from a tarball at an arbitrary url, so just point
 # them at the official release anyway as this will still exercise the logic for
 # downloading dune from a url passed on the command-line.
-FROM base AS test12
+FROM base AS test8
 RUN apk update && apk add curl
 
 # Install dune system-wide using the install script:
@@ -330,7 +179,7 @@ RUN test $(dune --version) = "$DUNE_VERSION"
 ###############################################################################
 # Test that the modied shell config can still be loaded successfully if dune is
 # no longer installed when the shell is bash.
-FROM base AS test13
+FROM base AS test9
 RUN apk update && apk add curl expect bash
 ENV DUNE_VERSION="3.19.1"
 
@@ -361,7 +210,7 @@ RUN $SHELL .profile
 ###############################################################################
 # Test that the modied shell config can still be loaded successfully if dune is
 # no longer installed when the shell is zsh.
-FROM base AS test14
+FROM base AS test10
 RUN apk update && apk add curl expect zsh
 ENV DUNE_VERSION="3.19.1"
 
@@ -392,7 +241,7 @@ RUN $SHELL .zshrc
 ###############################################################################
 # Test that the modied shell config can still be loaded successfully if dune is
 # no longer installed when the shell is fish.
-FROM base AS test15
+FROM base AS test11
 RUN apk update && apk add curl expect fish
 ENV DUNE_VERSION="3.19.1"
 
@@ -426,7 +275,7 @@ RUN $SHELL checked-config.fish
 # Test the logic for choosing which version of dune to install. This test uses
 # entirely fictional versions of dune to clarify that it does not look at the
 # real dune repo.
-FROM base AS test16
+FROM base AS test12
 RUN apk update && apk add curl git
 
 # Initialize a git repo whose tags will be used to indicate releases.
@@ -467,7 +316,7 @@ RUN git -C /dune-versions tag 0.11.0_alpha && \
 ###############################################################################
 # Test that the install script correctly infers the shell when the SHELL
 # environment variable is not set when the shell is sh.
-FROM base AS test17
+FROM base AS test13
 RUN apk update && apk add curl expect
 COPY interactive_generic.tcl .
 RUN adduser -D user
@@ -487,7 +336,7 @@ RUN grep env\.sh ~/.profile
 #Test that the install script correctly infers the shell when the SHELL
 #environment variable is not set when the shell is ash (a minimal posix shell
 #which should be handled the same as sh).
-FROM base AS test18
+FROM base AS test14
 RUN apk update && apk add curl expect
 COPY interactive_generic.tcl .
 RUN adduser -D user
@@ -507,7 +356,7 @@ RUN grep env\.sh ~/.profile
 # Test that the install script correctly infers the shell when the SHELL
 # environment variable is not set when the shell is dash (a minimal posix shell
 # which should be handled the same as sh).
-FROM base AS test19
+FROM base AS test15
 RUN apk update && apk add curl expect dash
 COPY interactive_generic.tcl .
 RUN adduser -D user
@@ -526,7 +375,7 @@ RUN grep env\.sh ~/.profile
 ###############################################################################
 # Test that the install script correctly infers the shell when the SHELL
 # environment variable is not set when the shell is bash.
-FROM base AS test20
+FROM base AS test16
 RUN apk update && apk add curl expect bash
 COPY interactive_generic.tcl .
 RUN adduser -D user
@@ -545,7 +394,7 @@ RUN grep env\.bash ~/.profile
 ###############################################################################
 # Test that the install script correctly infers the shell when the SHELL
 # environment variable is not set when the shell is zsh.
-FROM base AS test21
+FROM base AS test17
 RUN apk update && apk add curl expect zsh
 COPY interactive_generic.tcl .
 RUN adduser -D user
@@ -564,7 +413,7 @@ RUN grep env\.zsh ~/.zshrc
 ###############################################################################
 # Test that the install script correctly infers the shell when the SHELL
 # environment variable is not set when the shell is fish.
-FROM base AS test22
+FROM base AS test18
 RUN apk update && apk add curl expect fish
 COPY interactive_generic.tcl .
 RUN adduser -D user
@@ -584,7 +433,7 @@ RUN grep env\.fish ~/.config/fish/config.fish
 # Test that the install script correctly infers the shell when the SHELL
 # environment variable is not set when the shell is sh, avoiding the use of
 # expect.
-FROM base AS test23
+FROM base AS test19
 RUN apk update && apk add curl expect
 COPY interactive_generic.tcl .
 RUN adduser -D user
@@ -604,7 +453,7 @@ RUN grep env\.sh ~/.profile
 #Test that the install script correctly infers the shell when the SHELL
 #environment variable is not set when the shell is ash (a minimal posix shell
 #which should be handled the same as sh), avoiding the use of expect.
-FROM base AS test24
+FROM base AS test20
 RUN apk update && apk add curl expect
 COPY interactive_generic.tcl .
 RUN adduser -D user
@@ -624,7 +473,7 @@ RUN grep env\.sh ~/.profile
 # Test that the install script correctly infers the shell when the SHELL
 # environment variable is not set when the shell is dash (a minimal posix shell
 # which should be handled the same as sh), avoiding the use of expect.
-FROM base AS test25
+FROM base AS test21
 RUN apk update && apk add curl expect dash
 COPY interactive_generic.tcl .
 RUN adduser -D user
@@ -644,7 +493,7 @@ RUN grep env\.sh ~/.profile
 # Test that the install script correctly infers the shell when the SHELL
 # environment variable is not set when the shell is bash, avoiding the use of
 # expect.
-FROM base AS test26
+FROM base AS test22
 RUN apk update && apk add curl expect bash
 COPY interactive_generic.tcl .
 RUN adduser -D user
@@ -664,7 +513,7 @@ RUN grep env\.bash ~/.profile
 # Test that the install script correctly infers the shell when the SHELL
 # environment variable is not set when the shell is zsh, avoiding the use of
 # expect.
-FROM base AS test27
+FROM base AS test23
 RUN apk update && apk add curl expect zsh
 COPY interactive_generic.tcl .
 RUN adduser -D user
@@ -684,7 +533,7 @@ RUN grep env\.zsh ~/.zshrc
 # Test that the install script correctly infers the shell when the SHELL
 # environment variable is not set when the shell is fish, avoiding the use of
 # expect.
-FROM base AS test28
+FROM base AS test24
 RUN apk update && apk add curl expect fish
 COPY interactive_generic.tcl .
 RUN adduser -D user
@@ -729,7 +578,3 @@ COPY --from=test21 /install.sh .
 COPY --from=test22 /install.sh .
 COPY --from=test23 /install.sh .
 COPY --from=test24 /install.sh .
-COPY --from=test25 /install.sh .
-COPY --from=test26 /install.sh .
-COPY --from=test27 /install.sh .
-COPY --from=test28 /install.sh .
